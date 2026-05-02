@@ -1,0 +1,1231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>汉字读 · Mandarin Reading Trainer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Noto+Sans+SC:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&family=ZCOOL+XiaoWei&family=Ma+Shan+Zheng&display=swap');
+
+  *{margin:0;padding:0;box-sizing:border-box}
+
+  /* ═══ THEMES ═══ */
+  :root,[data-theme="dark"]{
+    --bg:#0f0f11;--bg2:#18181c;--bg3:#222228;--bg4:#2a2a32;
+    --border:#333340;--border2:#44445a;
+    --text:#f0f0f5;--text2:#a0a0b8;--text3:#6a6a88;
+    --accent:#c8a96e;--accent2:#e8c98e;
+    --red:#e05252;--green:#52c07a;--blue:#6099e8;
+    --radius:12px;--radius-sm:8px;
+    --font-sans:'DM Sans',sans-serif;
+    --font-zh:'Noto Serif SC',serif;
+    --font-zh-sans:'Noto Sans SC',sans-serif;
+    --font-body:'DM Sans',sans-serif;
+    --shadow:0 8px 32px rgba(0,0,0,.5);
+    --tooltip-bg:#18181c;
+  }
+
+  [data-theme="light"]{
+    --bg:#f4f1ea;--bg2:#fffdf8;--bg3:#f0ece0;--bg4:#e8e2d4;
+    --border:#d8d0bc;--border2:#c0b89a;
+    --text:#1a1610;--text2:#5a5040;--text3:#9a8c70;
+    --accent:#8b6914;--accent2:#a07820;
+    --red:#c04040;--green:#3a8a5a;--blue:#3060b0;
+    --shadow:0 8px 32px rgba(0,0,0,.12);
+    --tooltip-bg:#fffdf8;
+  }
+
+  /* Reading Theme: 竹 Bamboo (warm parchment) */
+  [data-reading-theme="bamboo"]{
+    --bg:#f7f0e0;--bg2:#fdf8ee;--bg3:#ede5cc;--bg4:#e0d5b8;
+    --border:#d0c4a0;--border2:#b8a878;
+    --text:#2c2010;--text2:#6b5830;--text3:#9a8455;
+    --accent:#7a5c20;--accent2:#9a7430;
+    --font-zh:'Noto Serif SC',serif;
+    --font-body:'Lora',serif;
+    --font-sans:'Lora',serif;
+    --shadow:0 8px 32px rgba(80,50,0,.1);
+  }
+
+  /* Reading Theme: 墨 Ink (true dark, ink on paper feel) */
+  [data-reading-theme="ink"]{
+    --bg:#111418;--bg2:#1a1e24;--bg3:#222830;--bg4:#2a3038;
+    --border:#2a3040;--border2:#3a4458;
+    --text:#dde4f0;--text2:#8898b8;--text3:#505a72;
+    --accent:#7ab0e0;--accent2:#9cc4f0;
+    --font-zh:'Noto Serif SC',serif;
+    --font-body:'Source Serif 4',serif;
+    --font-sans:'Source Serif 4',serif;
+    --shadow:0 8px 40px rgba(0,0,0,.7);
+  }
+
+  /* Reading Theme: 霞 Dusk (warm sepia dark) */
+  [data-reading-theme="dusk"]{
+    --bg:#1c1510;--bg2:#251c14;--bg3:#2e2418;--bg4:#382c1e;
+    --border:#40301c;--border2:#60482a;
+    --text:#ede0c8;--text2:#b09060;--text3:#706040;
+    --accent:#e8b060;--accent2:#f0c880;
+    --font-zh:'Noto Serif SC',serif;
+    --font-body:'Crimson Pro',serif;
+    --font-sans:'Crimson Pro',serif;
+    --shadow:0 8px 40px rgba(0,0,0,.6);
+  }
+
+  body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;transition:background .3s,color .3s}
+
+  /* NAV */
+  nav{display:flex;align-items:center;justify-content:space-between;padding:1rem 2rem;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:100;backdrop-filter:blur(12px)}
+  .logo{font-size:1.1rem;font-weight:600;letter-spacing:-.02em;color:var(--text);display:flex;align-items:center;gap:.5rem}
+  .logo span{color:var(--accent);font-family:var(--font-zh);font-size:1.2rem}
+  .nav-badge{font-size:.7rem;background:var(--accent);color:var(--bg);padding:2px 8px;border-radius:20px;font-weight:600;letter-spacing:.05em;opacity:.9}
+  .nav-right{display:flex;align-items:center;gap:.5rem}
+
+  /* THEME SWITCHERS in nav */
+  .theme-toggle{display:flex;align-items:center;gap:.25rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:.2rem .4rem}
+  .theme-dot{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;display:flex;align-items:center;justify-content:center;font-size:.75rem}
+  .theme-dot:hover,.theme-dot.active{border-color:var(--accent)}
+  .theme-dot[data-t="light"]{background:#f4f1ea;color:#8b6914}
+  .theme-dot[data-t="dark"]{background:#0f0f11;color:#c8a96e}
+
+  /* VIEWS */
+  .view{display:none;flex:1;padding:2rem}
+  .view.active{display:flex;flex-direction:column;animation:fadeIn .3s ease}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* HOME VIEW */
+  .home-hero{text-align:center;padding:3rem 1rem 2rem;max-width:640px;margin:0 auto}
+  .home-hero h1{font-size:2.4rem;font-weight:600;letter-spacing:-.03em;line-height:1.2;margin-bottom:.75rem}
+  .home-hero h1 span{color:var(--accent);font-family:var(--font-zh)}
+  .home-hero p{color:var(--text2);font-size:1rem;line-height:1.7}
+  .input-tabs{display:flex;gap:.5rem;margin:2rem auto;max-width:720px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:.35rem}
+  .tab-btn{flex:1;padding:.55rem 1rem;border:none;background:transparent;color:var(--text2);cursor:pointer;border-radius:calc(var(--radius) - 4px);font-size:.85rem;font-family:var(--font-sans);font-weight:500;transition:all .2s}
+  .tab-btn.active{background:var(--bg4);color:var(--text);border:1px solid var(--border2)}
+  .input-panel{display:none;max-width:720px;margin:0 auto;width:100%}
+  .input-panel.active{display:block}
+
+  /* IMAGE UPLOAD */
+  .upload-zone{border:2px dashed var(--border2);border-radius:var(--radius);padding:3rem;text-align:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+  .upload-zone:hover{border-color:var(--accent);background:rgba(200,169,110,.04)}
+  .upload-zone.dragover{border-color:var(--accent);background:rgba(200,169,110,.08)}
+  .upload-icon{font-size:2.5rem;margin-bottom:1rem;opacity:.4}
+  .upload-zone p{color:var(--text2);font-size:.9rem}
+  .upload-zone strong{color:var(--accent)}
+  #file-input{display:none}
+  .preview-img{max-width:100%;max-height:300px;border-radius:var(--radius-sm);margin-top:1rem;object-fit:contain}
+
+  /* TEXT INPUT */
+  .zh-textarea{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;color:var(--text);font-family:var(--font-zh-sans);font-size:1rem;line-height:1.8;resize:vertical;min-height:200px;outline:none;transition:border-color .2s}
+  .zh-textarea:focus{border-color:var(--accent)}
+  .zh-textarea::placeholder{color:var(--text3);font-family:var(--font-sans)}
+
+  /* ANALYZE BTN */
+  .analyze-btn{width:100%;max-width:720px;margin:1.25rem auto 0;display:flex;align-items:center;justify-content:center;gap:.6rem;padding:.9rem 2rem;background:var(--accent);color:var(--bg);border:none;border-radius:var(--radius);font-size:.95rem;font-weight:600;cursor:pointer;font-family:var(--font-sans);transition:all .2s;letter-spacing:-.01em}
+  .analyze-btn:hover{background:var(--accent2);transform:translateY(-1px)}
+  .analyze-btn:active{transform:translateY(0)}
+  .analyze-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+  .btn-spinner{width:16px;height:16px;border:2px solid rgba(26,18,6,.3);border-top-color:var(--bg);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* LOADING */
+  .loading-overlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem;z-index:200}
+  .loading-spinner{width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite}
+  .loading-text{color:var(--text2);font-size:.9rem}
+  .loading-zh{font-family:var(--font-zh);font-size:2rem;color:var(--accent);animation:pulse 2s ease infinite}
+  @keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+  /* READING VIEW */
+  #reading-view{padding:0}
+  .reading-toolbar{display:flex;align-items:center;gap:.5rem;padding:.85rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:50;flex-wrap:wrap}
+  .tb-btn{display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;font-family:var(--font-sans);transition:all .2s;white-space:nowrap}
+  .tb-btn:hover{border-color:var(--border2);color:var(--text);background:var(--bg2)}
+  .tb-btn.active{background:var(--bg3);border-color:var(--border2);color:var(--text)}
+  .tb-sep{width:1px;height:20px;background:var(--border);margin:0 .15rem;flex-shrink:0}
+  .font-size-ctrl{display:flex;align-items:center;gap:.5rem}
+  .font-size-ctrl span{font-size:.8rem;color:var(--text2);min-width:28px;text-align:center}
+  .back-btn{display:flex;align-items:center;gap:.4rem;padding:.4rem .85rem;border:1px solid var(--border);background:transparent;color:var(--text2);border-radius:var(--radius-sm);cursor:pointer;font-size:.8rem;font-family:var(--font-sans);transition:all .2s;flex-shrink:0}
+  .back-btn:hover{color:var(--text);border-color:var(--border2)}
+  .tb-spacer{flex:1}
+
+  /* FONT PICKER */
+  .font-picker-group{display:flex;align-items:center;gap:.2rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:.2rem .4rem}
+  .font-pick-btn{width:26px;height:26px;border-radius:50%;border:2px solid transparent;background:transparent;color:var(--text2);cursor:pointer;font-size:1rem;line-height:1;transition:all .15s;display:flex;align-items:center;justify-content:center;padding:0}
+  .font-pick-btn:hover{color:var(--text);border-color:var(--border2)}
+  .font-pick-btn.active{border-color:var(--accent);color:var(--accent);background:var(--bg3)}
+  #fp-serif{font-family:'Noto Serif SC',serif}
+  #fp-sans{font-family:'Noto Sans SC',sans-serif}
+  #fp-kai{font-family:'ZCOOL XiaoWei',serif}
+  #fp-song{font-family:'Ma Shan Zheng',cursive}
+
+  /* READING THEME MINI SELECTOR in toolbar */
+  .reading-theme-group{display:flex;align-items:center;gap:.3rem;background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:.2rem .5rem}
+  .rt-btn{font-size:.72rem;padding:.2rem .5rem;border-radius:12px;border:1px solid transparent;background:transparent;color:var(--text3);cursor:pointer;font-family:var(--font-sans);transition:all .15s;white-space:nowrap}
+  .rt-btn:hover{color:var(--text2);border-color:var(--border)}
+  .rt-btn.active{background:var(--bg3);color:var(--accent);border-color:var(--border2)}
+
+  /* READING CONTENT */
+  .reading-content{max-width:780px;margin:0 auto;padding:3rem 2rem 6rem;width:100%}
+  .reading-title{font-family:var(--font-zh);font-size:2rem;font-weight:700;text-align:center;margin-bottom:2.5rem;color:var(--accent);letter-spacing:.05em}
+  .reading-paragraph{margin-bottom:1.5rem;line-height:2.4;font-family:var(--font-zh);font-size:1.15rem;color:var(--text)}
+
+  /* VOCAB TOKENS */
+  .zh-token{cursor:pointer;position:relative;display:inline;border-radius:3px;transition:background .15s}
+  .zh-token:hover{background:rgba(200,169,110,.15)}
+  .zh-token.active-click{background:rgba(200,169,110,.25);outline:2px solid var(--accent);outline-offset:1px;border-radius:3px}
+  .zh-token.hl-1{background:rgba(96,153,232,.15);border-bottom:1.5px solid var(--blue)}
+  .zh-token.hl-2{background:rgba(82,192,122,.15);border-bottom:1.5px solid var(--green)}
+  .zh-token.hl-vocab{background:rgba(200,169,110,.2);border-bottom:1.5px solid var(--accent)}
+  .zh-token.known{background:rgba(82,192,122,.08)}
+
+  /* TOOLTIP — click-based, pointer-events enabled */
+  .vocab-tooltip{
+    position:fixed;background:var(--tooltip-bg);border:1px solid var(--border2);
+    border-radius:var(--radius);padding:1.8rem 1.2rem 1rem;z-index:9999;
+    box-shadow:var(--shadow);min-width:190px;max-width:300px;
+    display:none;pointer-events:auto;
+  }
+  .vocab-tooltip.visible{display:block;animation:ttFade .15s ease}
+  @keyframes ttFade{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+  .tt-word{font-family:var(--font-zh);font-size:1.6rem;font-weight:700;color:var(--text);line-height:1}
+  .tt-pinyin{font-size:.85rem;color:var(--accent);margin:.35rem 0 .5rem;letter-spacing:.05em;font-style:italic;font-family:var(--font-sans)}
+  .tt-meaning{font-size:.9rem;color:var(--text2);line-height:1.5;font-family:var(--font-sans)}
+  .tt-example{font-size:.8rem;color:var(--text3);margin-top:.5rem;font-family:var(--font-zh-sans);line-height:1.6;border-top:1px solid var(--border);padding-top:.5rem}
+  .tt-actions{display:flex;gap:.4rem;margin-top:.75rem}
+  .tt-act-btn{font-size:.7rem;padding:3px 10px;border-radius:20px;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;font-family:var(--font-sans);transition:all .15s}
+  .tt-act-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .tt-act-btn.known{border-color:var(--green);color:var(--green)}
+  .tt-close{position:absolute;top:.45rem;right:.55rem;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:.75rem;line-height:1;padding:3px 6px;border-radius:4px;transition:all .15s;z-index:10}
+  .tt-close:hover{background:var(--bg4);color:var(--text);border-color:var(--border2)}
+
+  /* VOCAB PANEL */
+  .vocab-panel{position:fixed;right:0;top:57px;bottom:0;width:320px;background:var(--bg2);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .3s ease;z-index:60;display:flex;flex-direction:column;overflow:hidden}
+  .vocab-panel.open{transform:translateX(0)}
+  .vp-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+  .vp-header h3{font-size:.9rem;font-weight:600;letter-spacing:-.01em}
+  .vp-close{background:transparent;border:none;color:var(--text2);cursor:pointer;font-size:1.2rem;line-height:1;padding:2px}
+  .vp-list{flex:1;overflow-y:auto;padding:1rem}
+  .vp-item{display:flex;align-items:flex-start;gap:.75rem;padding:.75rem;border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:.5rem;background:var(--bg3)}
+  .vp-zh{font-family:var(--font-zh);font-size:1.2rem;font-weight:600;color:var(--text);min-width:40px}
+  .vp-info{flex:1}
+  .vp-pinyin{font-size:.75rem;color:var(--accent);margin-bottom:.2rem;font-family:var(--font-sans)}
+  .vp-meaning{font-size:.82rem;color:var(--text2);line-height:1.4;font-family:var(--font-sans)}
+  .vp-empty{padding:2rem;text-align:center;color:var(--text3);font-size:.85rem;font-family:var(--font-sans)}
+
+  /* STATS BAR */
+  .stats-bar{display:flex;gap:1.5rem;padding:.6rem 2rem;border-bottom:1px solid var(--border);background:var(--bg2);font-size:.78rem;color:var(--text2);font-family:var(--font-sans)}
+  .stat-item strong{color:var(--text)}
+  .stat-item.accent strong{color:var(--accent)}
+
+  /* ERROR */
+  .error-box{background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.3);border-radius:var(--radius-sm);padding:1rem 1.25rem;margin:1rem 0;color:var(--red);font-size:.875rem;max-width:720px;margin-left:auto;margin-right:auto;width:100%;font-family:var(--font-sans)}
+
+  /* PROGRESS */
+  .progress-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden;max-width:720px;margin:.5rem auto}
+  .progress-fill{height:100%;background:var(--accent);border-radius:2px;width:0;transition:width .4s ease}
+
+  /* ═══ QUIZ MODE ═══ */
+  #quiz-view{padding:0}
+  .quiz-toolbar{display:flex;align-items:center;gap:.75rem;padding:.85rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:57px;z-index:50}
+  .quiz-content{max-width:700px;margin:0 auto;padding:2.5rem 2rem 6rem;width:100%}
+  .quiz-header{margin-bottom:2rem}
+  .quiz-header h2{font-size:1.4rem;font-weight:600;letter-spacing:-.02em;margin-bottom:.4rem;font-family:var(--font-sans)}
+  .quiz-meta{font-size:.8rem;color:var(--text2);font-family:var(--font-sans)}
+  .quiz-progress-wrap{margin-bottom:2rem}
+  .quiz-prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-top:.5rem}
+  .quiz-prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+  .quiz-prog-label{font-size:.75rem;color:var(--text2);font-family:var(--font-sans)}
+  .quiz-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2rem;margin-bottom:1.5rem;animation:fadeIn .25s ease}
+  .quiz-q-type{font-size:.7rem;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.75rem;font-family:var(--font-sans);font-weight:600}
+  .quiz-question{font-size:1.05rem;line-height:1.8;color:var(--text);margin-bottom:1.5rem;font-family:var(--font-zh-sans)}
+  .quiz-question .zh-text{font-family:var(--font-zh);font-size:1.3rem;display:block;margin-bottom:.5rem;color:var(--accent)}
+  .quiz-options{display:flex;flex-direction:column;gap:.6rem}
+  .quiz-opt{padding:.75rem 1rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;text-align:left;font-size:.9rem;font-family:var(--font-sans);transition:all .2s;line-height:1.5}
+  .quiz-opt:hover:not(:disabled){border-color:var(--accent);background:var(--bg4)}
+  .quiz-opt.correct{border-color:var(--green);background:rgba(82,192,122,.12);color:var(--green)}
+  .quiz-opt.wrong{border-color:var(--red);background:rgba(224,82,82,.1);color:var(--red)}
+  .quiz-opt.show-correct{border-color:var(--green);background:rgba(82,192,122,.08)}
+  .quiz-opt:disabled{cursor:not-allowed;opacity:.9}
+  .quiz-fill-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:.75rem 1rem;color:var(--text);font-family:var(--font-zh-sans);font-size:1rem;outline:none;transition:border-color .2s}
+  .quiz-fill-input:focus{border-color:var(--accent)}
+  .quiz-fill-input.correct{border-color:var(--green);background:rgba(82,192,122,.08)}
+  .quiz-fill-input.wrong{border-color:var(--red);background:rgba(224,82,82,.07)}
+  .quiz-feedback{margin-top:1rem;padding:.75rem 1rem;border-radius:var(--radius-sm);font-size:.875rem;line-height:1.6;font-family:var(--font-sans);display:none}
+  .quiz-feedback.correct{background:rgba(82,192,122,.1);color:var(--green);border:1px solid rgba(82,192,122,.25);display:block}
+  .quiz-feedback.wrong{background:rgba(224,82,82,.08);color:var(--red);border:1px solid rgba(224,82,82,.2);display:block}
+  .quiz-nav{display:flex;align-items:center;justify-content:space-between;margin-top:1rem}
+  .quiz-nav-btn{padding:.55rem 1.25rem;border-radius:var(--radius-sm);border:1px solid var(--border2);background:var(--bg3);color:var(--text);cursor:pointer;font-size:.85rem;font-family:var(--font-sans);transition:all .2s}
+  .quiz-nav-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .quiz-nav-btn.primary{background:var(--accent);color:var(--bg);border-color:transparent;font-weight:600}
+  .quiz-nav-btn.primary:hover{background:var(--accent2)}
+  .quiz-nav-btn:disabled{opacity:.4;cursor:not-allowed}
+  .quiz-score-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:2.5rem 2rem;text-align:center;animation:fadeIn .3s ease}
+  .quiz-score-big{font-size:3.5rem;font-weight:700;color:var(--accent);letter-spacing:-.03em;font-family:var(--font-sans)}
+  .quiz-score-label{font-size:.9rem;color:var(--text2);margin-top:.25rem;font-family:var(--font-sans)}
+  .quiz-score-breakdown{display:flex;justify-content:center;gap:2rem;margin:1.5rem 0;font-family:var(--font-sans);font-size:.85rem}
+  .quiz-score-breakdown .score-item{text-align:center}
+  .quiz-score-breakdown .score-item strong{display:block;font-size:1.4rem;margin-bottom:.2rem}
+  .score-correct strong{color:var(--green)}
+  .score-wrong strong{color:var(--red)}
+  .quiz-restart-btn{margin-top:1rem;padding:.7rem 2rem;border-radius:var(--radius-sm);background:var(--accent);color:var(--bg);border:none;cursor:pointer;font-size:.9rem;font-weight:600;font-family:var(--font-sans);transition:all .2s}
+  .quiz-restart-btn:hover{background:var(--accent2)}
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+  /* RESPONSIVE */
+  @media(max-width:640px){
+    .reading-content,.quiz-content{padding:2rem 1rem 4rem}
+    .reading-title{font-size:1.5rem}
+    nav{padding:.75rem 1rem}
+    .reading-toolbar,.quiz-toolbar{padding:.75rem 1rem}
+    .vocab-panel{width:100%;top:auto;height:70vh;bottom:0;border-left:none;border-top:1px solid var(--border);transform:translateY(100%)}
+    .vocab-panel.open{transform:translateY(0)}
+    .reading-theme-group{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><span>汉字读</span> Mandarin Reader</div>
+  <div class="nav-right">
+    <!-- Light/Dark toggle -->
+    <div class="theme-toggle" id="base-theme-toggle">
+      <div class="theme-dot active" data-t="dark" onclick="setBaseTheme('dark')" title="Dark">🌙</div>
+      <div class="theme-dot" data-t="light" onclick="setBaseTheme('light')" title="Light">☀️</div>
+    </div>
+    <div class="nav-badge">Qwen AI</div>
+  </div>
+</nav>
+
+<!-- HOME VIEW -->
+<div class="view active" id="home-view">
+  <div class="home-hero">
+    <h1>Read Chinese with<br><span>智能 </span>comprehension</h1>
+    <p>Upload an image or paste text — get an immersive reading experience with instant vocabulary lookup, pinyin, and translations.</p>
+  </div>
+
+  <div class="input-tabs">
+    <button class="tab-btn active" onclick="switchTab('image')">📷 &nbsp;Upload Image</button>
+    <button class="tab-btn" onclick="switchTab('text')">✏️ &nbsp;Paste Text</button>
+  </div>
+
+  <!-- IMAGE PANEL -->
+  <div class="input-panel active" id="panel-image">
+    <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()" ondragover="handleDrag(event,true)" ondragleave="handleDrag(event,false)" ondrop="handleDrop(event)">
+      <div class="upload-icon">🖼</div>
+      <p><strong>Click to upload</strong> or drag &amp; drop</p>
+      <p style="margin-top:.4rem;font-size:.8rem">PNG, JPG, WEBP — photos of Chinese text, screenshots, book pages</p>
+      <img id="preview-img" class="preview-img" style="display:none">
+    </div>
+    <input type="file" id="file-input" accept="image/*" onchange="handleFileSelect(event)">
+  </div>
+
+  <!-- TEXT PANEL -->
+  <div class="input-panel" id="panel-text">
+    <textarea class="zh-textarea" id="zh-text-input" placeholder="在这里粘贴中文段落...&#10;Paste your Chinese text here, then press Ctrl+Enter or click Analyze." onkeydown="handleTextKey(event)"></textarea>
+  </div>
+
+  <div id="progress-wrap" style="display:none">
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  <div id="error-box" class="error-box" style="display:none"></div>
+
+  <button class="analyze-btn" id="analyze-btn" onclick="startAnalysis()">
+    <span id="btn-text">✦ Analyze &amp; Start Reading</span>
+  </button>
+</div>
+
+<!-- READING VIEW -->
+<div class="view" id="reading-view">
+  <div class="reading-toolbar">
+    <button class="back-btn" onclick="goHome()">← Back</button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" id="btn-pinyin" onclick="togglePinyin()">拼 Pinyin</button>
+    <button class="tb-btn" id="btn-vocab" onclick="toggleVocabPanel()">📖 Vocab</button>
+    <div class="tb-sep"></div>
+    <!-- Reading Themes -->
+    <div class="reading-theme-group">
+      <button class="rt-btn active" id="rt-default" onclick="setReadingTheme('default')" title="Default">默认</button>
+      <button class="rt-btn" id="rt-bamboo" onclick="setReadingTheme('bamboo')" title="Warm parchment">竹</button>
+      <button class="rt-btn" id="rt-ink" onclick="setReadingTheme('ink')" title="Ink dark">墨</button>
+      <button class="rt-btn" id="rt-dusk" onclick="setReadingTheme('dusk')" title="Warm sepia">霞</button>
+    </div>
+    <div class="tb-sep"></div>
+    <!-- Font Picker -->
+    <div class="font-picker-group" id="font-picker-group">
+      <button class="font-pick-btn active" id="fp-serif" onclick="setReadingFont('serif')" title="Noto Serif SC">宋</button>
+      <button class="font-pick-btn" id="fp-sans" onclick="setReadingFont('sans')" title="Noto Sans SC">黑</button>
+      <button class="font-pick-btn" id="fp-kai" onclick="setReadingFont('kai')" title="ZCOOL XiaoWei">楷</button>
+      <button class="font-pick-btn" id="fp-song" onclick="setReadingFont('song')" title="Ma Shan Zheng">仿</button>
+    </div>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" id="btn-quiz" onclick="startQuiz()" style="display:none">🧠 Quiz</button>
+    <div class="tb-spacer"></div>
+    <div class="font-size-ctrl">
+      <button class="tb-btn" onclick="changeFontSize(-1)">A-</button>
+      <span id="font-size-label">17</span>
+      <button class="tb-btn" onclick="changeFontSize(1)">A+</button>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="stats-bar">
+    <span class="stat-item"><strong id="stat-chars">0</strong> characters</span>
+    <span class="stat-item accent"><strong id="stat-vocab">0</strong> vocab items</span>
+    <span class="stat-item"><strong id="stat-saved">0</strong> saved</span>
+    <span class="stat-item" id="stat-quiz-wrap" style="display:none">📝 Quiz available</span>
+  </div>
+
+  <div class="reading-content" id="reading-content">
+    <!-- rendered here -->
+  </div>
+</div>
+
+<!-- QUIZ VIEW -->
+<div class="view" id="quiz-view">
+  <div class="quiz-toolbar">
+    <button class="back-btn" onclick="backToReading()">← Back to Reading</button>
+  </div>
+  <div class="quiz-content" id="quiz-content">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<!-- VOCAB PANEL -->
+<div class="vocab-panel" id="vocab-panel">
+  <div class="vp-header">
+    <h3>Vocabulary List</h3>
+    <button class="vp-close" onclick="toggleVocabPanel()">✕</button>
+  </div>
+  <div class="vp-list" id="vp-list">
+    <div class="vp-empty">Click words while reading<br>to add them here.</div>
+  </div>
+</div>
+
+<!-- TOOLTIP — click-based -->
+<div class="vocab-tooltip" id="vocab-tooltip" onpointerdown="event.stopPropagation()">
+  <button class="tt-close" onpointerdown="event.stopPropagation()" onclick="closeTooltip()" title="Close">✕</button>
+  <div class="tt-word" id="tt-word"></div>
+  <div class="tt-pinyin" id="tt-pinyin"></div>
+  <div class="tt-meaning" id="tt-meaning"></div>
+  <div class="tt-example" id="tt-example" style="display:none"></div>
+  <div class="tt-actions">
+    <button class="tt-act-btn" onpointerdown="event.stopPropagation()" onclick="saveCurrentWord()">+ Save</button>
+    <button class="tt-act-btn known" id="tt-known-btn" onpointerdown="event.stopPropagation()" onclick="markKnown()">✓ Known</button>
+  </div>
+</div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const SUPABASE_QWEN_PROXY_URL = "https://gbertobhdcjqkvbvgena.functions.supabase.co/qwen-proxy";
+
+// Min word tokens to show Quiz button
+const QUIZ_MIN_WORDS = 80;
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let currentTab = 'image';
+let uploadedFile = null;
+let analysisData = null;
+let savedVocab = JSON.parse(localStorage.getItem('zh_saved_vocab') || '[]');
+let knownWords = new Set(JSON.parse(localStorage.getItem('zh_known_words') || '[]'));
+let showPinyin = false;
+
+let currentFontSize = 17;
+let tooltipWord = null;
+let vocabPanelOpen = false;
+let activeTokenEl = null;
+let currentReadingTheme = 'default';
+let currentReadingFont = 'serif';
+const READING_FONTS = {
+  serif: "'Noto Serif SC', serif",
+  sans:  "'Noto Sans SC', sans-serif",
+  kai:   "'ZCOOL XiaoWei', serif",
+  song:  "'Ma Shan Zheng', cursive"
+};
+let baseTheme = localStorage.getItem('zh_base_theme') || 'dark';
+let totalTextChars = 0;
+let totalTextWords = 0;
+
+// Quiz state
+let quizQuestions = [];
+let quizIndex = 0;
+let quizScores = { correct: 0, wrong: 0 };
+let quizAnswered = false;
+
+function getQwenProxyUrl() {
+  if (!SUPABASE_QWEN_PROXY_URL || SUPABASE_QWEN_PROXY_URL.includes('YOUR_PROJECT_REF')) {
+    throw new Error('Set SUPABASE_QWEN_PROXY_URL in the HTML after deploying the Supabase function');
+  }
+  return SUPABASE_QWEN_PROXY_URL;
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function init() {
+  setBaseTheme(baseTheme, true);
+})();
+
+// ─── BASE THEME (Light / Dark) ────────────────────────────────────────────────
+function setBaseTheme(theme, silent) {
+  baseTheme = theme;
+  document.documentElement.setAttribute('data-theme', theme);
+  document.querySelectorAll('.theme-dot').forEach(d => d.classList.toggle('active', d.dataset.t === theme));
+  if (!silent) localStorage.setItem('zh_base_theme', theme);
+  // Reset reading theme when switching base
+  if (!silent) { currentReadingTheme = 'default'; updateReadingThemeBtns(); }
+}
+
+// ─── READING THEMES ───────────────────────────────────────────────────────────
+const READING_THEMES = ['default','bamboo','ink','dusk'];
+
+function setReadingTheme(theme) {
+  currentReadingTheme = theme;
+  document.documentElement.removeAttribute('data-reading-theme');
+  if (theme !== 'default') document.documentElement.setAttribute('data-reading-theme', theme);
+  updateReadingThemeBtns();
+}
+
+function updateReadingThemeBtns() {
+  READING_THEMES.forEach(t => {
+    const btn = document.getElementById('rt-' + t);
+    if (btn) btn.classList.toggle('active', t === currentReadingTheme);
+  });
+}
+
+function setReadingFont(font) {
+  currentReadingFont = font;
+  const fontValue = READING_FONTS[font] || READING_FONTS.serif;
+  // Apply to all reading paragraphs live
+  document.querySelectorAll('.reading-paragraph').forEach(p => p.style.fontFamily = fontValue);
+  // Update active button
+  Object.keys(READING_FONTS).forEach(f => {
+    const btn = document.getElementById('fp-' + f);
+    if (btn) btn.classList.toggle('active', f === font);
+  });
+}
+
+// ─── TAB SWITCHING ────────────────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', (i===0&&tab==='image')||(i===1&&tab==='text')));
+  document.querySelectorAll('.input-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+function handleDrag(e, over) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.toggle('dragover', over);
+}
+function handleDrop(e) {
+  e.preventDefault();
+  handleDrag(e, false);
+  const file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) setUploadedFile(file);
+}
+function handleFileSelect(e) {
+  const file = e.target.files[0];
+  if (file) setUploadedFile(file);
+}
+function setUploadedFile(file) {
+  uploadedFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = document.getElementById('preview-img');
+    img.src = ev.target.result;
+    img.style.display = 'block';
+    document.getElementById('upload-zone').querySelector('p').textContent = '✓ ' + file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+function handleTextKey(e) {
+  if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) startAnalysis();
+}
+
+// ─── ANALYSIS ─────────────────────────────────────────────────────────────────
+async function startAnalysis() {
+  const errorBox = document.getElementById('error-box');
+  errorBox.style.display = 'none';
+
+  let chineseText = '';
+
+  if (currentTab === 'image') {
+    if (!uploadedFile) { showError('Please upload an image first.'); return; }
+    setLoading(true, 'Extracting text from image...');
+    try { chineseText = await extractTextFromImage(uploadedFile); }
+    catch(e) { setLoading(false); showError('OCR failed: ' + e.message); return; }
+    if (!chineseText || chineseText.trim().length < 2) {
+      setLoading(false); showError('No Chinese text detected in image.'); return;
+    }
+  } else {
+    chineseText = document.getElementById('zh-text-input').value.trim();
+    if (!chineseText) { showError('Please paste some Chinese text first.'); return; }
+  }
+
+  setLoading(true, 'Analyzing...');
+
+  try {
+    const data = await analyzeChineseText(chineseText);
+    analysisData = data;
+    totalTextChars = chineseText.replace(/\s/g,'').length;
+    renderReadingView(data);
+    setProgress(100);
+    setTimeout(() => {
+      setLoading(false);
+      showView('reading');
+      // Reset reading theme to default when new text loaded
+      setReadingTheme('default');
+    }, 300);
+  } catch(e) {
+    setLoading(false);
+    showError('Analysis failed: ' + e.message);
+    console.error(e);
+  }
+}
+
+// ─── OCR via Aliyun Qwen-VL ──────────────────────────────────────────────────
+async function extractTextFromImage(file) {
+  const base64 = await fileToBase64(file);
+  const mediaType = file.type || 'image/jpeg';
+  const dataUrl = `data:${mediaType};base64,${base64}`;
+
+  const response = await fetch(getQwenProxyUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'ocr',
+      image: dataUrl
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error((err.error || err.message || err.code || 'OCR error') + ' (' + response.status + ')');
+  }
+  const data = await response.json();
+  return data.text || '';
+}
+
+function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result.split(',')[1]);
+    r.onerror = () => rej(new Error('File read failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+// ─── ANALYZE TEXT ─────────────────────────────────────────────────────────────
+// Two-stage: 1) metadata, 2) per-paragraph tokenize (paragraph-aware)
+async function analyzeChineseText(text) {
+  setLoadingMsg('Analyzing text structure...');
+  const meta = await fetchMeta(text);
+  setProgress(25);
+
+  // Split into paragraphs — handle both \n-separated and single-block OCR text
+  let rawParagraphs = text.split(/\n+/).map(s => s.trim()).filter(s => s.length > 0);
+  // If only 1 block (no newlines), auto-split into ~4-sentence chunks
+  if (rawParagraphs.length === 1 && rawParagraphs[0].length > 120) {
+    const allSents = splitSentences(rawParagraphs[0]);
+    rawParagraphs = chunkArray(allSents, 4).map(g => g.join(''));
+  }
+
+  const CONCURRENCY = 4;
+  const orderedParagraphs = [];
+
+  // Process paragraphs SEQUENTIALLY to guarantee order (each para tokenizes sentences in parallel)
+  for (let pi = 0; pi < rawParagraphs.length; pi++) {
+    const para = rawParagraphs[pi];
+    if (!para.trim()) continue;
+
+    setLoadingMsg('Tokenizing paragraph ' + (pi + 1) + '/' + rawParagraphs.length + '...');
+    setProgress(25 + Math.round(((pi) / rawParagraphs.length) * 65));
+
+    const sentences = splitSentences(para);
+    const sentBatches = chunkArray(sentences, 3);
+    const paraTokens = [];
+
+    // Sentences within a paragraph: parallel for speed
+    for (let si = 0; si < sentBatches.length; si += CONCURRENCY) {
+      const sBatch = sentBatches.slice(si, si + CONCURRENCY);
+      const sResults = await Promise.all(sBatch.map(b => fetchTokens(b.join(''))));
+      for (const r of sResults) {
+        if (r && r.length) paraTokens.push(...r);
+      }
+    }
+
+    if (paraTokens.length > 0) orderedParagraphs.push({ tokens: paraTokens });
+  }
+
+  return {
+    title: meta.title || '',
+    summary: meta.summary || '',
+    difficulty: meta.difficulty || '',
+    vocab_highlights: meta.vocab_highlights || [],
+    paragraphs: orderedParagraphs,
+    rawText: text
+  };
+}
+
+function splitSentences(text) {
+  const parts = text.replace(/([。！？；\n])/g, '$1|||').split('|||');
+  return parts.map(s => s.trim()).filter(s => s.length > 0);
+}
+
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+  return chunks;
+}
+
+function setLoadingMsg(msg) {
+  const el = document.getElementById('btn-text');
+  if (el) el.innerHTML = '<div class="btn-spinner"></div>' + msg;
+}
+
+async function fetchMeta(fullText) {
+  const prompt = 'Read this Chinese text and return ONLY this JSON (no markdown, no explanation):\n{"title":"Chinese title or inferred","summary":"2-sentence English summary","difficulty":"HSK1-HSK6","vocab_highlights":["word1","word2","word3","word4","word5","word6","word7","word8"]}\n\nText:\n' + fullText.slice(0, 2000);
+  const data = await qwenRequest(prompt, 512);
+  try {
+    const clean = (data || '').replace(/```json\s*|```/g, '').trim();
+    return JSON.parse(clean);
+  } catch(e) {
+    return { title: '', summary: '', difficulty: 'HSK3', vocab_highlights: [] };
+  }
+}
+
+async function fetchTokens(sentence) {
+  if (!sentence.trim()) return [];
+  const prompt = 'Tokenize this Chinese text. Return ONLY a JSON array, no object wrapper, no markdown:\n[{"t":"word","p":"pīnyīn","m":"meaning","y":"word|punct"}]\n\nRules:\n- t=Chinese word/char, p=pinyin with tone marks, m=English 1-4 words, y=word or punct\n- Punctuation: p and m are empty string\n- Split into natural words not single chars\n- Do NOT skip or omit any characters from the input\n\nText: ' + sentence;
+  const data = await qwenRequest(prompt, 1500);
+  try {
+    let clean = (data || '').replace(/```json\s*|```/g, '').trim();
+    // Handle edge: model sometimes wraps in object
+    const parsed = JSON.parse(clean);
+    const arr = Array.isArray(parsed) ? parsed : (parsed.tokens || parsed.paragraphs?.[0]?.tokens || []);
+    return arr.map(tok => ({
+      text: tok.t || tok.text || '',
+      pinyin: tok.p || tok.pinyin || '',
+      meaning: tok.m || tok.meaning || '',
+      type: (tok.y || tok.type || 'word') === 'punct' ? 'punct' : 'word'
+    })).filter(tok => tok.text.trim());
+  } catch(e) {
+    console.warn('Token parse failed for:', sentence.slice(0, 40), e.message);
+    // Fallback: render entire sentence as single token so nothing is lost
+    return [{ text: sentence.trim(), pinyin: '', meaning: '', type: 'word' }];
+  }
+}
+
+async function qwenRequest(prompt, maxTokens) {
+  const response = await fetch(getQwenProxyUrl(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      type: 'text',
+      prompt,
+      maxTokens
+    })
+  });
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error((err.error || err.message || err.code || 'API error') + ' (' + response.status + ')');
+  }
+  const data = await response.json();
+  return data.text || '';
+}
+
+// ─── RENDER READING ───────────────────────────────────────────────────────────
+function renderReadingView(data) {
+  const content = document.getElementById('reading-content');
+  content.innerHTML = '';
+
+  if (data.title) {
+    const h = document.createElement('div');
+    h.className = 'reading-title';
+    h.textContent = data.title;
+    content.appendChild(h);
+  }
+
+  if (data.summary) {
+    const sum = document.createElement('div');
+    sum.style.cssText = 'background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1rem 1.25rem;margin-bottom:2rem;color:var(--text2);font-size:.875rem;line-height:1.7;font-family:var(--font-sans)';
+    let html = `<strong style="color:var(--accent);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase;font-family:var(--font-sans)">Summary</strong><br>${escHtml(data.summary)}`;
+    if (data.difficulty) html += ` <span style="background:var(--bg4);color:var(--text2);font-size:.7rem;padding:2px 8px;border-radius:20px;border:1px solid var(--border);margin-left:.5rem">${escHtml(data.difficulty)}</span>`;
+    sum.innerHTML = html;
+    content.appendChild(sum);
+  }
+
+  let totalChars = 0, totalWords = 0, vocabCount = 0;
+  const highlightSet = new Set(data.vocab_highlights || []);
+
+  data.paragraphs.forEach(para => {
+    const p = document.createElement('div');
+    p.className = 'reading-paragraph';
+    p.style.fontSize = currentFontSize + 'px';
+    p.style.fontFamily = READING_FONTS[currentReadingFont] || READING_FONTS.serif;
+
+    para.tokens.forEach(token => {
+      if (!token || !token.text) return;
+      if (token.type === 'space') { p.appendChild(document.createTextNode(' ')); return; }
+      if (token.type === 'punct') {
+        p.appendChild(document.createTextNode(token.text));
+        totalChars += token.text.length;
+        return;
+      }
+
+      totalChars += token.text.length;
+      if (token.type === 'word') totalWords++;
+      if (token.meaning) vocabCount++;
+
+      const span = document.createElement('span');
+      span.className = 'zh-token';
+      if (highlightSet.has(token.text)) span.classList.add('hl-vocab');
+      if (knownWords.has(token.text)) span.classList.add('known');
+
+      if (showPinyin && token.pinyin && token.type === 'word') {
+        const ruby = document.createElement('ruby');
+        ruby.appendChild(document.createTextNode(token.text));
+        const rt = document.createElement('rt');
+        rt.textContent = token.pinyin;
+        rt.style.cssText = 'font-size:.55em;color:var(--accent);font-family:var(--font-sans)';
+        ruby.appendChild(rt);
+        span.appendChild(ruby);
+      } else {
+        span.textContent = token.text;
+      }
+
+      span.dataset.word = token.text;
+      span.dataset.pinyin = token.pinyin || '';
+      span.dataset.meaning = token.meaning || '';
+      span.dataset.example = token.example || '';
+
+      // CLICK to show tooltip (not hover)
+      span.addEventListener('click', e => {
+        e.stopPropagation();
+        handleTokenClick(e, token, span);
+      });
+
+      p.appendChild(span);
+    });
+
+    content.appendChild(p);
+  });
+
+  document.getElementById('stat-chars').textContent = totalChars;
+  document.getElementById('stat-vocab').textContent = vocabCount;
+  updateSavedStat();
+
+  totalTextWords = totalWords;
+
+  // Show quiz button if the reading has enough word-level content
+  const showQuiz = totalTextWords >= QUIZ_MIN_WORDS;
+  document.getElementById('btn-quiz').style.display = showQuiz ? 'flex' : 'none';
+  document.getElementById('stat-quiz-wrap').style.display = showQuiz ? '' : 'none';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── TOOLTIP (CLICK-BASED) ────────────────────────────────────────────────────
+function handleTokenClick(e, token, spanEl) {
+  if (!token.meaning && !token.pinyin) return;
+
+  // Deactivate previous
+  if (activeTokenEl && activeTokenEl !== spanEl) {
+    activeTokenEl.classList.remove('active-click');
+  }
+
+  const tt = document.getElementById('vocab-tooltip');
+
+  // Toggle: clicking same token closes it
+  if (activeTokenEl === spanEl && tt.classList.contains('visible')) {
+    closeTooltip();
+    return;
+  }
+
+  activeTokenEl = spanEl;
+  spanEl.classList.add('active-click');
+  tooltipWord = token;
+
+  document.getElementById('tt-word').textContent = token.text;
+  document.getElementById('tt-pinyin').textContent = token.pinyin || '';
+  document.getElementById('tt-meaning').textContent = token.meaning || '';
+  const ex = document.getElementById('tt-example');
+  if (token.example) { ex.textContent = token.example; ex.style.display = 'block'; }
+  else { ex.style.display = 'none'; }
+  document.getElementById('tt-known-btn').textContent = knownWords.has(token.text) ? '✓ Known' : '○ Mark Known';
+
+  positionTooltip(e.clientX, e.clientY, tt);
+  tt.classList.add('visible');
+}
+
+function closeTooltip() {
+  const tt = document.getElementById('vocab-tooltip');
+  tt.classList.remove('visible');
+  tt.style.display = 'none';
+  if (activeTokenEl) { activeTokenEl.classList.remove('active-click'); activeTokenEl = null; }
+  tooltipWord = null;
+}
+
+function positionTooltip(x, y, tt) {
+  tt.style.display = 'block';
+  const tw = tt.offsetWidth || 230, th = tt.offsetHeight || 180;
+  let left = x - tw / 2, top = y + 18;
+  if (left < 8) left = 8;
+  if (left + tw > window.innerWidth - 8) left = window.innerWidth - tw - 8;
+  if (top + th > window.innerHeight - 8) top = y - th - 10;
+  tt.style.left = left + 'px';
+  tt.style.top = top + 'px';
+}
+
+// Close tooltip when clicking outside — use pointerdown for speed
+// The tooltip itself calls stopPropagation on pointerdown so this never fires inside it
+document.addEventListener('pointerdown', e => {
+  const tt = document.getElementById('vocab-tooltip');
+  if (!tt || !tt.classList.contains('visible')) return;
+  if (e.target.classList.contains('zh-token')) return; // token click handles its own logic
+  closeTooltip();
+});
+
+function saveCurrentWord() {
+  if (!tooltipWord || !tooltipWord.meaning) return;
+  const exists = savedVocab.find(v => v.text === tooltipWord.text);
+  if (!exists) {
+    savedVocab.push({ text: tooltipWord.text, pinyin: tooltipWord.pinyin, meaning: tooltipWord.meaning });
+    localStorage.setItem('zh_saved_vocab', JSON.stringify(savedVocab));
+    renderVocabPanel();
+    updateSavedStat();
+  }
+  closeTooltip();
+}
+
+function markKnown() {
+  if (!tooltipWord) return;
+  if (knownWords.has(tooltipWord.text)) knownWords.delete(tooltipWord.text);
+  else knownWords.add(tooltipWord.text);
+  localStorage.setItem('zh_known_words', JSON.stringify([...knownWords]));
+  document.querySelectorAll(`.zh-token[data-word="${CSS.escape(tooltipWord.text)}"]`)
+    .forEach(el => el.classList.toggle('known', knownWords.has(tooltipWord.text)));
+  document.getElementById('tt-known-btn').textContent = knownWords.has(tooltipWord.text) ? '✓ Known' : '○ Mark Known';
+}
+
+// ─── VOCAB PANEL ──────────────────────────────────────────────────────────────
+function toggleVocabPanel() {
+  vocabPanelOpen = !vocabPanelOpen;
+  document.getElementById('vocab-panel').classList.toggle('open', vocabPanelOpen);
+  document.getElementById('btn-vocab').classList.toggle('active', vocabPanelOpen);
+  if (vocabPanelOpen) renderVocabPanel();
+}
+
+function renderVocabPanel() {
+  const list = document.getElementById('vp-list');
+  if (!savedVocab.length) { list.innerHTML = '<div class="vp-empty">Click words while reading<br>to add them here.</div>'; return; }
+  list.innerHTML = savedVocab.map((v, i) => `
+    <div class="vp-item">
+      <div class="vp-zh">${escHtml(v.text)}</div>
+      <div class="vp-info">
+        <div class="vp-pinyin">${escHtml(v.pinyin || '')}</div>
+        <div class="vp-meaning">${escHtml(v.meaning || '')}</div>
+      </div>
+      <button onclick="removeVocab(${i})" style="background:transparent;border:none;color:var(--text3);cursor:pointer;font-size:.9rem;padding:2px">✕</button>
+    </div>`).join('');
+}
+
+function removeVocab(i) {
+  savedVocab.splice(i, 1);
+  localStorage.setItem('zh_saved_vocab', JSON.stringify(savedVocab));
+  renderVocabPanel();
+  updateSavedStat();
+}
+
+function updateSavedStat() {
+  document.getElementById('stat-saved').textContent = savedVocab.length;
+}
+
+// ─── TOOLBAR ──────────────────────────────────────────────────────────────────
+function togglePinyin() {
+  showPinyin = !showPinyin;
+  document.getElementById('btn-pinyin').classList.toggle('active', showPinyin);
+  if (analysisData) renderReadingView(analysisData);
+}
+
+function changeFontSize(delta) {
+  currentFontSize = Math.min(28, Math.max(13, currentFontSize + delta));
+  document.getElementById('font-size-label').textContent = currentFontSize;
+  document.querySelectorAll('.reading-paragraph').forEach(p => p.style.fontSize = currentFontSize + 'px');
+}
+
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id + '-view').classList.add('active');
+}
+
+function goHome() {
+  showView('home');
+  closeTooltip();
+  document.getElementById('vocab-panel').classList.remove('open');
+  vocabPanelOpen = false;
+  // Reset reading theme
+  setReadingTheme('default');
+}
+
+function backToReading() {
+  showView('reading');
+}
+
+// ─── UTILITIES ────────────────────────────────────────────────────────────────
+function setLoading(on, msg) {
+  const btn = document.getElementById('analyze-btn');
+  const btnText = document.getElementById('btn-text');
+  btn.disabled = on;
+  if (on) {
+    btnText.innerHTML = `<div class="btn-spinner"></div>${msg || 'Processing...'}`;
+    document.getElementById('progress-wrap').style.display = 'block';
+  } else {
+    btnText.innerHTML = '✦ Analyze &amp; Start Reading';
+    document.getElementById('progress-wrap').style.display = 'none';
+    setProgress(0);
+  }
+}
+
+function setProgress(pct) {
+  document.getElementById('progress-fill').style.width = pct + '%';
+}
+
+function showError(msg) {
+  const box = document.getElementById('error-box');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// ─── QUIZ MODE ────────────────────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════════════
+
+async function startQuiz() {
+  if (!analysisData) return;
+  if (totalTextWords < QUIZ_MIN_WORDS) return;
+  showView('quiz');
+  const qc = document.getElementById('quiz-content');
+  qc.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text2);font-family:var(--font-sans)">
+    <div style="font-size:2rem;margin-bottom:1rem">🧠</div>
+    <div>Generating quiz questions...</div>
+    <div style="margin-top:1rem"><div style="width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;margin:0 auto"></div></div>
+  </div>`;
+
+  try {
+    quizQuestions = await generateQuizQuestions(analysisData);
+    quizIndex = 0;
+    quizScores = { correct: 0, wrong: 0 };
+    renderQuizQuestion();
+  } catch(e) {
+    qc.innerHTML = `<div class="error-box" style="display:block">Failed to generate quiz: ${escHtml(e.message)}</div>
+      <button onclick="backToReading()" class="quiz-nav-btn" style="margin-top:1rem">← Back to Reading</button>`;
+  }
+}
+
+async function generateQuizQuestions(data) {
+  // Extract vocab tokens with meanings for question pool
+  const vocabPool = [];
+  const seenWords = new Set();
+  for (const para of data.paragraphs) {
+    for (const tok of para.tokens) {
+      if (tok.type === 'word' && tok.meaning && tok.text.length >= 2 && !seenWords.has(tok.text)) {
+        vocabPool.push(tok);
+        seenWords.add(tok.text);
+      }
+    }
+  }
+
+  // Build context sentences for reading comprehension
+  const rawText = data.rawText || data.paragraphs.map(p => p.tokens.map(t => t.text).join('')).join('\n');
+
+  // Generate questions via Qwen
+  const readingWords = data.paragraphs.reduce((sum, para) =>
+    sum + para.tokens.filter(tok => tok.type === 'word').length, 0);
+  const numQ = Math.min(8, Math.max(4, Math.floor(readingWords / 25)));
+  const vocabSample = vocabPool.slice(0, 20).map(v => `${v.text}(${v.meaning})`).join(', ');
+
+  const prompt = `You are a Chinese language quiz generator. Based on the following text and vocabulary, generate exactly ${numQ} quiz questions.
+
+Return ONLY a JSON array, no markdown:
+[
+  {"type":"meaning","word":"词","correct":"word","options":["word","wrong1","wrong2","wrong3"]},
+  {"type":"fill","sentence":"他___了一本书。","blank":"买","answer":"买","hint":"to buy"},
+  {"type":"comprehension","question":"English question about the text?","correct":"correct answer","options":["correct answer","wrong1","wrong2","wrong3"]}
+]
+
+Rules:
+- Mix question types: "meaning" (what does word mean), "fill" (fill in the blank), "comprehension" (reading comprehension about the passage)
+- For "meaning" and "comprehension": always provide exactly 4 options, correct answer must be one of them
+- For "fill": sentence with ___ where blank is the answer, hint is English meaning
+- All wrong options must be plausible, not obviously wrong
+- Comprehension questions must be answerable from the text
+- Use ONLY "meaning", "fill", and "comprehension" questions.
+- NEVER generate pinyin questions, pronunciation questions, tone mark questions, or romanization questions.
+
+Vocabulary available: ${vocabSample}
+
+Text (first 1500 chars): ${rawText.slice(0, 1500)}`;
+
+  const raw = await qwenRequest(prompt, 2000);
+  let clean = (raw || '').replace(/```json\s*|```/g, '').trim();
+  const parsed = JSON.parse(clean);
+  if (!Array.isArray(parsed) || parsed.length === 0) throw new Error('No questions generated');
+  const allowedTypes = new Set(['meaning', 'fill', 'comprehension']);
+  const questions = parsed.filter(q => allowedTypes.has(q.type));
+  if (!questions.length) throw new Error('No valid non-pinyin questions generated');
+  return questions.slice(0, numQ);
+}
+
+function renderQuizQuestion() {
+  const qc = document.getElementById('quiz-content');
+  const total = quizQuestions.length;
+
+  if (quizIndex >= total) {
+    renderQuizScore();
+    return;
+  }
+
+  const q = quizQuestions[quizIndex];
+  quizAnswered = false;
+  const pct = Math.round((quizIndex / total) * 100);
+
+  let questionHTML = '';
+  if (q.type === 'meaning') {
+    questionHTML = `<div class="quiz-q-type">Vocabulary — Meaning</div>
+      <div class="quiz-question">What does this word mean?<br><span class="zh-text">${escHtml(q.word)}</span></div>`;
+  } else if (q.type === 'fill') {
+    const displayed = (q.sentence || '').replace('___', '<span style="display:inline-block;min-width:40px;border-bottom:2px solid var(--accent);color:var(--accent);text-align:center">___</span>');
+    questionHTML = `<div class="quiz-q-type">Fill in the Blank</div>
+      <div class="quiz-question">${displayed}</div>
+      <div style="font-size:.8rem;color:var(--text3);margin-bottom:1rem;font-family:var(--font-sans)">Hint: ${escHtml(q.hint || '')}</div>`;
+  } else if (q.type === 'comprehension') {
+    questionHTML = `<div class="quiz-q-type">Reading Comprehension</div>
+      <div class="quiz-question">${escHtml(q.question)}</div>`;
+  }
+
+  let answerHTML = '';
+  if (q.type === 'fill') {
+    answerHTML = `<input class="quiz-fill-input" id="quiz-fill-inp" type="text" placeholder="Type your answer..." autocomplete="off">
+      <div class="quiz-feedback" id="quiz-feedback"></div>`;
+  } else {
+    const opts = q.options || [q.correct];
+    // Store raw values in data-val attributes — compare raw, display escaped
+    answerHTML = `<div class="quiz-options">${opts.map((opt, i) =>
+      `<button class="quiz-opt" id="qopt-${i}" data-val="${escHtml(opt)}" data-correct="${escHtml(q.correct)}" onclick="answerQuiz(this)">${escHtml(opt)}</button>`
+    ).join('')}</div>
+    <div class="quiz-feedback" id="quiz-feedback"></div>`;
+  }
+
+  qc.innerHTML = `
+    <div class="quiz-header">
+      <h2>Quiz</h2>
+      <div class="quiz-meta">Question ${quizIndex + 1} of ${total} · ✓ ${quizScores.correct} · ✗ ${quizScores.wrong}</div>
+    </div>
+    <div class="quiz-progress-wrap">
+      <div class="quiz-prog-label">${pct}% complete</div>
+      <div class="quiz-prog-bar"><div class="quiz-prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="quiz-card">
+      ${questionHTML}
+      ${answerHTML}
+    </div>
+    <div class="quiz-nav">
+      <button class="quiz-nav-btn" onclick="backToReading()">← Exit Quiz</button>
+      ${q.type === 'fill'
+        ? `<button class="quiz-nav-btn primary" onclick="checkFillAnswer()">Check Answer</button>`
+        : `<button class="quiz-nav-btn primary" id="quiz-next-btn" onclick="nextQuestion()" disabled>Next →</button>`
+      }
+    </div>`;
+}
+
+function answerQuiz(btn) {
+  if (quizAnswered) return;
+  quizAnswered = true;
+
+  const selected = btn.dataset.val;
+  const correct = btn.dataset.correct;
+  const isCorrect = selected === correct;
+  if (isCorrect) quizScores.correct++;
+  else quizScores.wrong++;
+
+  document.querySelectorAll('.quiz-opt').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.val === correct) b.classList.add('show-correct');
+  });
+  btn.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+  fb.textContent = isCorrect ? '✓ Correct!' : `✗ The correct answer is: ${correct}`;
+
+  const nextBtn = document.getElementById('quiz-next-btn');
+  if (nextBtn) nextBtn.disabled = false;
+}
+
+function checkFillAnswer() {
+  if (quizAnswered) return;
+  const inp = document.getElementById('quiz-fill-inp');
+  if (!inp) return;
+  const userAnswer = inp.value.trim();
+  if (!userAnswer) return;
+
+  quizAnswered = true;
+  const q = quizQuestions[quizIndex];
+  const correct = (q.answer || q.blank || '').trim();
+  const isCorrect = userAnswer === correct || userAnswer.toLowerCase() === correct.toLowerCase();
+
+  if (isCorrect) quizScores.correct++;
+  else quizScores.wrong++;
+
+  inp.disabled = true;
+  inp.classList.add(isCorrect ? 'correct' : 'wrong');
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.className = 'quiz-feedback ' + (isCorrect ? 'correct' : 'wrong');
+  fb.textContent = isCorrect ? '✓ Correct!' : `✗ The correct answer is: ${correct}`;
+
+  // Replace check button with next
+  const nav = document.querySelector('.quiz-nav');
+  if (nav) {
+    const checkBtn = nav.querySelector('.quiz-nav-btn.primary');
+    if (checkBtn) {
+      checkBtn.textContent = 'Next →';
+      checkBtn.onclick = nextQuestion;
+    }
+  }
+}
+
+function nextQuestion() {
+  quizIndex++;
+  renderQuizQuestion();
+}
+
+function renderQuizScore() {
+  const total = quizQuestions.length;
+  const pct = Math.round((quizScores.correct / total) * 100);
+  let emoji = pct >= 80 ? '🏆' : pct >= 60 ? '👍' : pct >= 40 ? '📚' : '💪';
+  let msg = pct >= 80 ? 'Excellent work!' : pct >= 60 ? 'Good job!' : pct >= 40 ? 'Keep practicing!' : 'Keep studying!';
+
+  document.getElementById('quiz-content').innerHTML = `
+    <div class="quiz-score-card">
+      <div style="font-size:3rem;margin-bottom:1rem">${emoji}</div>
+      <div class="quiz-score-big">${pct}%</div>
+      <div class="quiz-score-label">${msg}</div>
+      <div class="quiz-score-breakdown">
+        <div class="quiz-score-breakdown score-item score-correct"><strong>${quizScores.correct}</strong>Correct</div>
+        <div class="quiz-score-breakdown score-item score-wrong"><strong>${quizScores.wrong}</strong>Wrong</div>
+        <div class="quiz-score-breakdown score-item"><strong>${total}</strong>Total</div>
+      </div>
+      <div style="display:flex;gap:.75rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap">
+        <button class="quiz-restart-btn" onclick="startQuiz()">🔄 Retry Quiz</button>
+        <button class="quiz-nav-btn" onclick="backToReading()">← Back to Reading</button>
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
